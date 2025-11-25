@@ -1,5 +1,6 @@
 package com.example.prueba_n2.ui.screens
 
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -19,15 +20,16 @@ import com.example.prueba_n2.model.Producto
 fun DetallesProducto(
     productos: List<Producto>,
     onNavigateToPublish: () -> Unit,
-    onNavigateToProfile: () -> Unit
+    onNavigateToProfile: () -> Unit,
+    onNavigateToDetail: (String) -> Unit // Nuevo callback
 ) {
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(id = R.string.app_name)) },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    titleContentColor = MaterialTheme.colorScheme.primary
+                    containerColor = MaterialTheme.colorScheme.background,
+                    titleContentColor = MaterialTheme.colorScheme.onBackground
                 ),
                 navigationIcon = {
                     IconButton(onClick = onNavigateToProfile) {
@@ -47,11 +49,17 @@ fun DetallesProducto(
     ) { paddingValues ->
         LazyColumn(
             modifier = Modifier
+                .fillMaxSize()
                 .padding(paddingValues)
-                .padding(horizontal = 16.dp)
         ) {
             items(productos) { producto ->
-                TarjetaProducto(producto = producto)
+                TarjetaProducto(
+                    producto = producto,
+                    onItemClick = {
+                        onNavigateToDetail(producto.id)
+                    }
+                )
+                Divider() 
             }
         }
     }

@@ -12,6 +12,7 @@ val dummyProductos = listOf(
         description = "Un ícono del estilo urbano. Las Puma Suede son un clásico atemporal que combina con todo, perfectas para un look casual y cómodo.",
         imageResId = R.drawable.producto_zapatillas,
         sellerId = "tienda_oficial",
+        sellerName = "Puma Store",
         timestamp = System.currentTimeMillis() - 2 * 60 * 1000
     ),
     Producto(
@@ -22,6 +23,7 @@ val dummyProductos = listOf(
         imageResId = R.drawable.producto_poleron,
         rating = 4.6f,
         sellerId = "urban_style_cl",
+        sellerName = "Urban Style CL",
         timestamp = System.currentTimeMillis() - 1 * 60 * 1000
     ),
     Producto(
@@ -32,6 +34,7 @@ val dummyProductos = listOf(
         imageResId = R.drawable.producto_jeans,
         rating = 4.7f,
         sellerId = "denim_masters",
+        sellerName = "Denim Masters",
         timestamp = System.currentTimeMillis()
     )
 )

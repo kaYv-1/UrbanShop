@@ -8,12 +8,12 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
-@Database(entities = [Producto::class, Usuario::class], version = 8, exportSchema = false)
+@Database(entities = [Producto::class, Usuario::class, Comentario::class], version = 13, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun productoDao(): ProductoDao
-
     abstract fun usuarioDao(): UsuarioDao
+    abstract fun comentarioDao(): ComentarioDao
 
     private class AppDatabaseCallback(private val scope: CoroutineScope) : RoomDatabase.Callback() {
 
@@ -23,6 +23,17 @@ abstract class AppDatabase : RoomDatabase() {
                 scope.launch {
                     populateDatabase(database.productoDao())
                 }
+            }
+        }
+        
+        override fun onOpen(db: SupportSQLiteDatabase) {
+            super.onOpen(db)
+            INSTANCE?.let { database ->
+                 scope.launch {
+                     if (database.productoDao().count() == 0) {
+                         populateDatabase(database.productoDao())
+                     }
+                 }
             }
         }
 

@@ -15,12 +15,12 @@ import androidx.core.view.WindowCompat
 private val DarkColorScheme = darkColorScheme(
     primary = ElectricBlue,
     secondary = MediumGray,
-    background = Charcoal,
-    surface = DarkGray,
+    background = Color.Black, // Fondo completamente negro para modo oscuro
+    surface = Charcoal,
     onPrimary = OffWhite,
     onSecondary = OffWhite,
     onBackground = OffWhite,
-    onSurface = LightGray,
+    onSurface = OffWhite,
     error = Color.Red
 )
 
@@ -38,7 +38,7 @@ private val LightColorScheme = lightColorScheme(
 
 @Composable
 fun Prueba_n2Theme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
+    darkTheme: Boolean = true, // Forzar modo oscuro por defecto
     content: @Composable () -> Unit
 ) {
     val colorScheme = if (darkTheme) {
@@ -51,7 +51,7 @@ fun Prueba_n2Theme(
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as Activity).window
-            window.statusBarColor = colorScheme.primary.toArgb()
+            window.statusBarColor = colorScheme.background.toArgb() // Status bar del color del fondo
             WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !darkTheme
         }
     }

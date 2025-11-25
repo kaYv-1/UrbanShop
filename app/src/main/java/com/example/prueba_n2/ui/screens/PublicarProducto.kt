@@ -166,7 +166,8 @@ fun PublicarProducto(
                         description = descripcion,
                         imageUri = selectedImageUri?.toString(),
                         rating = 0.0f,
-                        sellerId = currentUser?.id.toString(),
+                        sellerId = currentUser?.email ?: "Desconocido",
+                        sellerName = currentUser?.nombre ?: "Usuario", // Guardamos el nombre real del vendedor
                         timestamp = System.currentTimeMillis()
                     )
                     onProductoPublicado(nuevoProducto)

@@ -14,5 +14,6 @@ data class Producto(
     val imageUri: String? = null,
     val imageResId: Int? = null,
     val sellerId: String,
+    val sellerName: String,
     val timestamp: Long
 )

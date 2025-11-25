@@ -11,4 +11,16 @@ class ProductoRepository(private val productoDao: ProductoDao) {
     suspend fun insertProducto(producto: Producto) {
         productoDao.insertProducto(producto)
     }
+
+    suspend fun getProductoById(id: String): Producto? {
+        return productoDao.getProductoById(id)
+    }
+
+    fun getProductosBySeller(sellerId: String): Flow<List<Producto>> {
+        return productoDao.getProductosBySeller(sellerId)
+    }
+
+    suspend fun deleteProducto(productoId: String) {
+        productoDao.deleteProductoById(productoId)
+    }
 }

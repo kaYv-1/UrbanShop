@@ -19,6 +19,18 @@ interface ProductoDao {
     @Query("SELECT * FROM productos ORDER BY timestamp DESC")
     fun getAllProductos(): Flow<List<Producto>>
 
+    @Query("SELECT * FROM productos WHERE id = :id")
+    suspend fun getProductoById(id: String): Producto?
+
     @Query("DELETE FROM productos")
     suspend fun deleteAll()
+
+    @Query("DELETE FROM productos WHERE id = :productoId")
+    suspend fun deleteProductoById(productoId: String)
+
+    @Query("SELECT COUNT(*) FROM productos")
+    suspend fun count(): Int
+
+    @Query("SELECT * FROM productos WHERE sellerId = :sellerId ORDER BY timestamp DESC")
+    fun getProductosBySeller(sellerId: String): Flow<List<Producto>>
 }
