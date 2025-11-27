@@ -11,6 +11,7 @@ data class Producto(
     val price: Int,
     val rating: Float,
     val description: String,
+    val category: String, // <--- NUEVO CAMPO AGREGADO
     val imageUri: String? = null,
     val imageResId: Int? = null,
     val sellerId: String,

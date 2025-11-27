@@ -9,7 +9,11 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState // <--- Agregado para scroll si la pantalla es chica
+import androidx.compose.foundation.verticalScroll     // <--- Agregado
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons             // <--- Importante para el icono del menú
+import androidx.compose.material.icons.filled.ArrowDropDown // <--- Icono flecha
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -40,6 +44,12 @@ fun PublicarProducto(
     var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
     var photoUri by remember { mutableStateOf<Uri?>(null) }
     val context = LocalContext.current
+
+    // --- NUEVO: Variables para el manejo de categorías ---
+    val categorias = listOf("Polerón", "Gorro", "Zapatillas", "Pantalones", "Accesorios")
+    var categoriaExpandida by remember { mutableStateOf(false) }
+    var categoriaSeleccionada by remember { mutableStateOf(categorias[0]) } // Por defecto la primera
+    // ----------------------------------------------------
 
     val galleryLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent(),
@@ -84,7 +94,8 @@ fun PublicarProducto(
             modifier = Modifier
                 .padding(paddingValues)
                 .padding(16.dp)
-                .fillMaxSize(),
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState()), // Permite hacer scroll si el teclado tapa campos
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
@@ -105,6 +116,37 @@ fun PublicarProducto(
                 modifier = Modifier.fillMaxWidth(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
             )
+
+            // --- NUEVO: Selector de Categoría (Dropdown) ---
+            Box(modifier = Modifier.fillMaxWidth()) {
+                OutlinedTextField(
+                    value = categoriaSeleccionada,
+                    onValueChange = {},
+                    readOnly = true, // No se puede escribir, solo seleccionar
+                    label = { Text("Categoría") },
+                    trailingIcon = {
+                        IconButton(onClick = { categoriaExpandida = !categoriaExpandida }) {
+                            Icon(Icons.Default.ArrowDropDown, contentDescription = "Seleccionar")
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                )
+                DropdownMenu(
+                    expanded = categoriaExpandida,
+                    onDismissRequest = { categoriaExpandida = false }
+                ) {
+                    categorias.forEach { categoria ->
+                        DropdownMenuItem(
+                            text = { Text(categoria) },
+                            onClick = {
+                                categoriaSeleccionada = categoria
+                                categoriaExpandida = false
+                            }
+                        )
+                    }
+                }
+            }
+            // -----------------------------------------------
 
             OutlinedTextField(
                 value = descripcion,
@@ -164,19 +206,24 @@ fun PublicarProducto(
                         name = nombreArticulo,
                         price = precio.toIntOrNull() ?: 0,
                         description = descripcion,
+                        category = categoriaSeleccionada, // <--- NUEVO: Guardamos la categoría seleccionada
                         imageUri = selectedImageUri?.toString(),
                         rating = 0.0f,
                         sellerId = currentUser?.email ?: "Desconocido",
-                        sellerName = currentUser?.nombre ?: "Usuario", // Guardamos el nombre real del vendedor
+                        sellerName = currentUser?.nombre ?: "Usuario",
                         timestamp = System.currentTimeMillis()
                     )
                     onProductoPublicado(nuevoProducto)
                 },
                 modifier = Modifier.fillMaxWidth(),
+                // Habilitar botón solo si los campos obligatorios están llenos
                 enabled = nombreArticulo.isNotBlank() && precio.isNotBlank() && descripcion.isNotBlank() && currentUser != null
             ) {
                 Text("Publicar Artículo")
             }
+
+            // Espacio extra al final para que el scroll no corte el botón
+            Spacer(modifier = Modifier.height(32.dp))
         }
     }
 }

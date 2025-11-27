@@ -1,6 +1,7 @@
 package com.example.prueba_n2
 
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
@@ -10,11 +11,12 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.LaunchedEffect // <--- IMPORT AGREGADO
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -26,6 +28,7 @@ import com.example.prueba_n2.repository.ComentarioRepository
 import com.example.prueba_n2.repository.ProductoRepository
 import com.example.prueba_n2.repository.UsuarioRepository
 import com.example.prueba_n2.ui.screens.DetallesProducto
+import com.example.prueba_n2.ui.screens.PantallaCarrito
 import com.example.prueba_n2.ui.screens.PantallaDetallePublicacion
 import com.example.prueba_n2.ui.screens.PantallaIngreso
 import com.example.prueba_n2.ui.screens.PantallaPerfil
@@ -78,8 +81,9 @@ object AppRoutes {
     const val PRINCIPAL = "principal"
     const val PUBLICAR = "publicar"
     const val PERFIL = "perfil"
+    const val CARRITO = "carrito"
     const val DETALLE_PUBLICACION = "detalle_publicacion/{productoId}"
-    
+
     fun crearRutaDetalle(productoId: String) = "detalle_publicacion/$productoId"
 }
 
@@ -127,11 +131,20 @@ fun AppNavigation(
         composable(AppRoutes.PRINCIPAL) {
             DetallesProducto(
                 productos = productos,
+                productoViewModel = productoViewModel,
                 onNavigateToPublish = { navController.navigate(AppRoutes.PUBLICAR) },
                 onNavigateToProfile = { navController.navigate(AppRoutes.PERFIL) },
                 onNavigateToDetail = { productoId ->
                     navController.navigate(AppRoutes.crearRutaDetalle(productoId))
-                }
+                },
+                onNavigateToCart = { navController.navigate(AppRoutes.CARRITO) }
+            )
+        }
+
+        composable(AppRoutes.CARRITO) {
+            PantallaCarrito(
+                viewModel = productoViewModel,
+                onBack = { navController.popBackStack() }
             )
         }
 
@@ -157,29 +170,36 @@ fun AppNavigation(
                     }
                 },
                 onBack = { navController.popBackStack() },
-                productoViewModel = productoViewModel, 
+                productoViewModel = productoViewModel,
                 onNavigateToDetail = { productoId ->
                     navController.navigate(AppRoutes.crearRutaDetalle(productoId))
                 }
             )
         }
-        
+
         composable(
             route = AppRoutes.DETALLE_PUBLICACION,
             arguments = listOf(navArgument("productoId") { type = NavType.StringType })
         ) { backStackEntry ->
             val productoId = backStackEntry.arguments?.getString("productoId")
-            
+            val context = LocalContext.current
+
             if (productoId != null) {
-                productoViewModel.getProducto(productoId)
+                LaunchedEffect(productoId) {
+                    productoViewModel.getProducto(productoId)
+                }
             }
-            
+
             if (productoSeleccionado != null && productoSeleccionado!!.id == productoId) {
                 PantallaDetallePublicacion(
                     producto = productoSeleccionado!!,
                     comentarioViewModel = comentarioViewModel,
                     usuarioActualNombre = currentUser?.nombre ?: "Anónimo",
-                    onBack = { navController.popBackStack() }
+                    onBack = { navController.popBackStack() },
+                    onAddToCart = { prod ->
+                        productoViewModel.agregarAlCarrito(prod)
+                        Toast.makeText(context, "Agregado al carrito", Toast.LENGTH_SHORT).show()
+                    }
                 )
             } else {
                 Surface(modifier = Modifier.fillMaxSize()) {

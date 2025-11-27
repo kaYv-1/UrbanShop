@@ -10,6 +10,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Send
+import androidx.compose.material.icons.filled.ShoppingCart // <--- Importante: Nuevo import
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -38,7 +39,8 @@ fun PantallaDetallePublicacion(
     producto: Producto,
     comentarioViewModel: ComentarioViewModel,
     usuarioActualNombre: String,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    onAddToCart: (Producto) -> Unit // <--- NUEVO PARÁMETRO: Callback para agregar al carrito
 ) {
     val comentarios by comentarioViewModel.getComentarios(producto.id).collectAsState(initial = emptyList())
     var nuevoComentario by remember { mutableStateOf("") }
@@ -65,7 +67,7 @@ fun PantallaDetallePublicacion(
                         Spacer(modifier = Modifier.width(12.dp))
                         Column {
                             Text(
-                                text = producto.sellerName, 
+                                text = producto.sellerName,
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold
                             )
@@ -109,7 +111,7 @@ fun PantallaDetallePublicacion(
                             color = MaterialTheme.colorScheme.onPrimaryContainer
                         )
                     }
-                    
+
                     Spacer(modifier = Modifier.width(12.dp))
 
                     OutlinedTextField(
@@ -120,9 +122,9 @@ fun PantallaDetallePublicacion(
                         maxLines = 3,
                         shape = CircleShape
                     )
-                    
+
                     Spacer(modifier = Modifier.width(8.dp))
-                    
+
                     IconButton(
                         onClick = {
                             if (nuevoComentario.isNotBlank()) {
@@ -137,7 +139,7 @@ fun PantallaDetallePublicacion(
                         enabled = nuevoComentario.isNotBlank()
                     ) {
                         Icon(
-                            Icons.AutoMirrored.Filled.Send, 
+                            Icons.AutoMirrored.Filled.Send,
                             contentDescription = "Enviar",
                             tint = MaterialTheme.colorScheme.primary
                         )
@@ -173,19 +175,19 @@ fun PantallaDetallePublicacion(
                     contentDescription = producto.name,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(300.dp), 
+                        .height(300.dp),
                     contentScale = ContentScale.Crop
                 )
 
                 Column(modifier = Modifier.padding(16.dp)) {
-                    
+
                     Text(
                         text = producto.name,
                         style = MaterialTheme.typography.headlineMedium,
                         fontWeight = FontWeight.Black,
                         color = MaterialTheme.colorScheme.onBackground
                     )
-                    
+
                     Spacer(modifier = Modifier.height(8.dp))
 
                     Text(
@@ -205,17 +207,33 @@ fun PantallaDetallePublicacion(
                         )
                     }
 
+                    // --- NUEVO: Botón Agregar al Carrito ---
+                    Button(
+                        onClick = { onAddToCart(producto) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 12.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.secondary
+                        )
+                    ) {
+                        Icon(Icons.Default.ShoppingCart, contentDescription = null)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Agregar al Carrito")
+                    }
+                    // ---------------------------------------
+
                     Divider(color = MaterialTheme.colorScheme.outlineVariant)
-                    
+
                     Text(
                         text = producto.description,
                         style = MaterialTheme.typography.bodyLarge,
                         modifier = Modifier.padding(vertical = 16.dp),
                         lineHeight = MaterialTheme.typography.bodyLarge.lineHeight * 1.2
                     )
-                    
+
                     Divider(modifier = Modifier.padding(bottom = 16.dp))
-                    
+
                     Text(
                         text = "Comentarios",
                         style = MaterialTheme.typography.titleLarge,
@@ -238,11 +256,11 @@ fun PantallaDetallePublicacion(
                     )
                 }
             }
-            
+
             items(comentarios) { comentario ->
                 ItemComentario(comentario)
             }
-            
+
             item { Spacer(modifier = Modifier.height(80.dp)) }
         }
     }
