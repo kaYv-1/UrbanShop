@@ -20,8 +20,9 @@ class UsuarioRepository(private val usuarioDao: UsuarioDao) {
     suspend fun getUsuarioByEmail(email: String): Usuario? {
         try {
             val usuarios = api.getUsuarioByEmail(email)
-            if (usuarios.isNotEmpty()) {
-                val usuarioRemoto = usuarios[0]
+            val usuarioRemoto = usuarios.find { it.email.equals(email, ignoreCase = true) }
+            
+            if (usuarioRemoto != null) {
                 usuarioDao.insertUsuario(usuarioRemoto)
                 return usuarioRemoto
             }

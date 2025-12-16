@@ -7,7 +7,6 @@ import androidx.room.Query
 
 @Dao
 interface UsuarioDao {
-    // Cambiado a REPLACE para evitar crashes si el usuario ya existe al sincronizar
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertUsuario(usuario: Usuario)
 

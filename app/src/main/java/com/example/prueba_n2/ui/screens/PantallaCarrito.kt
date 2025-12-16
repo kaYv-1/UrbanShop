@@ -1,6 +1,7 @@
 package com.example.prueba_n2.ui.screens
 
 import android.widget.Toast
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -28,6 +29,8 @@ fun PantallaCarrito(
     val itemsCarrito by viewModel.carrito.collectAsState()
     val context = LocalContext.current
     val total = itemsCarrito.sumOf { it.producto.price * it.cantidad }
+    
+    var metodoPago by remember { mutableStateOf("Crédito") }
 
     Scaffold(
         topBar = {
@@ -44,6 +47,26 @@ fun PantallaCarrito(
             if (itemsCarrito.isNotEmpty()) {
                 Surface(tonalElevation = 8.dp, shadowElevation = 8.dp) {
                     Column(modifier = Modifier.padding(16.dp)) {
+                        
+                        Text("Método de Pago:", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            RadioButton(
+                                selected = (metodoPago == "Crédito"),
+                                onClick = { metodoPago = "Crédito" }
+                            )
+                            Text("Crédito", modifier = Modifier.padding(start = 4.dp).clickable { metodoPago = "Crédito" })
+                            
+                            Spacer(modifier = Modifier.width(24.dp))
+                            
+                            RadioButton(
+                                selected = (metodoPago == "Débito"),
+                                onClick = { metodoPago = "Débito" }
+                            )
+                            Text("Débito", modifier = Modifier.padding(start = 4.dp).clickable { metodoPago = "Débito" })
+                        }
+                        
+                        Divider(modifier = Modifier.padding(vertical = 8.dp))
+
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween
@@ -60,12 +83,12 @@ fun PantallaCarrito(
                         Button(
                             onClick = {
                                 viewModel.vaciarCarrito()
-                                Toast.makeText(context, "Compra realizada con éxito", Toast.LENGTH_LONG).show()
+                                Toast.makeText(context, "Compra realizada exitosamente con $metodoPago", Toast.LENGTH_LONG).show()
                                 onBack()
                             },
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            Text("Pagar")
+                            Text("Pagar con $metodoPago")
                         }
                     }
                 }
