@@ -31,6 +31,7 @@ import com.example.prueba_n2.ui.screens.DetallesProducto
 import com.example.prueba_n2.ui.screens.PantallaCarrito
 import com.example.prueba_n2.ui.screens.PantallaDetallePublicacion
 import com.example.prueba_n2.ui.screens.PantallaIngreso
+import com.example.prueba_n2.ui.screens.PantallaPago
 import com.example.prueba_n2.ui.screens.PantallaPerfil
 import com.example.prueba_n2.ui.screens.PantallaRegistro
 import com.example.prueba_n2.ui.screens.PublicarProducto
@@ -82,9 +83,11 @@ object AppRoutes {
     const val PUBLICAR = "publicar"
     const val PERFIL = "perfil"
     const val CARRITO = "carrito"
+    const val PAGO = "pago/{montoTotal}/{metodoPago}"
     const val DETALLE_PUBLICACION = "detalle_publicacion/{productoId}"
 
     fun crearRutaDetalle(productoId: String) = "detalle_publicacion/$productoId"
+    fun crearRutaPago(montoTotal: String, metodoPago: String) = "pago/$montoTotal/$metodoPago"
 }
 
 @Composable
@@ -144,6 +147,31 @@ fun AppNavigation(
         composable(AppRoutes.CARRITO) {
             PantallaCarrito(
                 viewModel = productoViewModel,
+                onBack = { navController.popBackStack() },
+                onNavigateToPago = { monto, metodo ->
+                     navController.navigate(AppRoutes.crearRutaPago(monto, metodo))
+                }
+            )
+        }
+        composable(
+            route = AppRoutes.PAGO,
+            arguments = listOf(
+                navArgument("montoTotal") { type = NavType.StringType },
+                navArgument("metodoPago") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val montoTotal = backStackEntry.arguments?.getString("montoTotal") ?: "0"
+            val metodoPago = backStackEntry.arguments?.getString("metodoPago") ?: ""
+
+            PantallaPago(
+                montoTotal = montoTotal,
+                metodoPago = metodoPago,
+                onPaymentSuccess = {
+                    productoViewModel.vaciarCarrito()
+                    navController.navigate(AppRoutes.PRINCIPAL) {
+                        popUpTo(AppRoutes.CARRITO) { inclusive = true }
+                    } 
+                },
                 onBack = { navController.popBackStack() }
             )
         }

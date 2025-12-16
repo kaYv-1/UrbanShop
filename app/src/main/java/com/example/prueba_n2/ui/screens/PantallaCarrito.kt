@@ -24,7 +24,8 @@ import java.util.Locale
 @Composable
 fun PantallaCarrito(
     viewModel: ProductoViewModel,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    onNavigateToPago: (String, String) -> Unit
 ) {
     val itemsCarrito by viewModel.carrito.collectAsState()
     val context = LocalContext.current
@@ -82,9 +83,8 @@ fun PantallaCarrito(
                         Spacer(modifier = Modifier.height(16.dp))
                         Button(
                             onClick = {
-                                viewModel.vaciarCarrito()
-                                Toast.makeText(context, "Compra realizada exitosamente con $metodoPago", Toast.LENGTH_LONG).show()
-                                onBack()
+                                val totalFormatted = formatPrice(total)
+                                onNavigateToPago(totalFormatted, metodoPago)
                             },
                             modifier = Modifier.fillMaxWidth()
                         ) {
