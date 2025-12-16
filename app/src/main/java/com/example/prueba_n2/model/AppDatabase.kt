@@ -8,7 +8,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
-@Database(entities = [Producto::class, Usuario::class, Comentario::class], version = 13, exportSchema = false)
+@Database(entities = [Producto::class, Usuario::class, Comentario::class], version = 14, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun productoDao(): ProductoDao

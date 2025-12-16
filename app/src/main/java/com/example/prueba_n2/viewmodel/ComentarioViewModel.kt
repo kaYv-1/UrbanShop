@@ -11,6 +11,10 @@ import kotlinx.coroutines.launch
 class ComentarioViewModel(private val repository: ComentarioRepository) : ViewModel() {
 
     fun getComentarios(productoId: String): Flow<List<Comentario>> {
+        // Disparar actualización desde la API externa
+        viewModelScope.launch {
+            repository.refreshComentarios(productoId)
+        }
         return repository.getComentarios(productoId)
     }
 

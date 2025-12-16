@@ -2,8 +2,10 @@ package com.example.prueba_n2.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.prueba_n2.model.CartItem
 import com.example.prueba_n2.model.Producto
 import com.example.prueba_n2.repository.ProductoRepository
+import com.example.prueba_n2.utils.CartService
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
@@ -22,15 +24,16 @@ class ProductoViewModel(private val repository: ProductoRepository) : ViewModel(
         if (cat == "Todos") lista else lista.filter { it.category == cat }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000L), emptyList())
 
-    private val _carrito = MutableStateFlow<List<Producto>>(emptyList())
+    private val _carrito = MutableStateFlow<List<CartItem>>(emptyList())
     val carrito = _carrito.asStateFlow()
+    
+    private val cartService = CartService()
 
     private val _productoSeleccionado = MutableStateFlow<Producto?>(null)
     val productoSeleccionado: StateFlow<Producto?> = _productoSeleccionado.asStateFlow()
 
-    // Funciones de Carrito
-    fun agregarAlCarrito(producto: Producto) {
-        _carrito.value = _carrito.value + producto
+    fun agregarAlCarrito(producto: Producto, cantidad: Int = 1) {
+        _carrito.value = cartService.addItem(_carrito.value, producto, cantidad)
     }
 
     fun vaciarCarrito() {
@@ -38,15 +41,13 @@ class ProductoViewModel(private val repository: ProductoRepository) : ViewModel(
     }
 
     fun eliminarDelCarrito(producto: Producto) {
-        _carrito.value = _carrito.value - producto
+        _carrito.value = _carrito.value.filter { it.producto.id != producto.id }
     }
 
-    // Funciones de Filtro
     fun cambiarCategoria(nuevaCategoria: String) {
         _categoriaSeleccionada.value = nuevaCategoria
     }
 
-    // Funciones existentes...
     fun addProducto(producto: Producto) {
         viewModelScope.launch { repository.insertProducto(producto) }
     }

@@ -11,7 +11,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect // <--- IMPORT AGREGADO
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -196,8 +196,8 @@ fun AppNavigation(
                     comentarioViewModel = comentarioViewModel,
                     usuarioActualNombre = currentUser?.nombre ?: "Anónimo",
                     onBack = { navController.popBackStack() },
-                    onAddToCart = { prod ->
-                        productoViewModel.agregarAlCarrito(prod)
+                    onAddToCart = { prod, cant ->
+                        productoViewModel.agregarAlCarrito(prod, cant)
                         Toast.makeText(context, "Agregado al carrito", Toast.LENGTH_SHORT).show()
                     }
                 )

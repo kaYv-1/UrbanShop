@@ -44,10 +44,9 @@ fun PantallaPerfil(
     productoViewModel: ProductoViewModel? = null,
     onNavigateToDetail: ((String) -> Unit)? = null
 ) {
-    // Obtenemos los productos del usuario de forma segura
     val misProductos: List<Producto> by remember(usuario, productoViewModel) {
         if (usuario != null && productoViewModel != null) {
-            productoViewModel.getProductosBySeller(usuario.email)
+            productoViewModel.getProductosBySeller(usuario.email ?: "")
         } else {
             flowOf(emptyList())
         }
@@ -83,7 +82,6 @@ fun PantallaPerfil(
                 .fillMaxSize(),
             contentPadding = PaddingValues(bottom = 16.dp)
         ) {
-            // 1. Cabecera del Perfil
             item {
                 if (usuario != null) {
                     Column(
@@ -92,7 +90,6 @@ fun PantallaPerfil(
                             .padding(16.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        // Avatar
                         Box(
                             modifier = Modifier
                                 .size(100.dp)
@@ -101,7 +98,7 @@ fun PantallaPerfil(
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                text = usuario.nombre.take(1).uppercase(),
+                                text = (usuario.nombre ?: "U").take(1).uppercase(),
                                 style = MaterialTheme.typography.displayMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -110,14 +107,14 @@ fun PantallaPerfil(
                         Spacer(modifier = Modifier.height(16.dp))
                         
                         Text(
-                            text = usuario.nombre,
+                            text = usuario.nombre ?: "Usuario",
                             style = MaterialTheme.typography.headlineMedium,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onBackground
                         )
                         
                         Text(
-                            text = usuario.email,
+                            text = usuario.email ?: "Sin Email",
                             style = MaterialTheme.typography.bodyLarge,
                             color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
                         )
@@ -147,7 +144,6 @@ fun PantallaPerfil(
                 }
             }
 
-            // 2. Título "Mis Publicaciones"
             if (usuario != null) {
                 item {
                     Text(
@@ -159,10 +155,7 @@ fun PantallaPerfil(
                     )
                 }
 
-                // 3. Lista de Items
                 if (misProductos.isNotEmpty()) {
-                    // Tomamos solo la más reciente (la primera, ya que la query ordena por timestamp DESC)
-                    // Si quieres mostrar TODAS pero cambiar el título, quita el .take(1)
                     items(misProductos) { producto ->
                         ItemHistorialProducto(
                             producto = producto,
@@ -210,7 +203,6 @@ fun ItemHistorialProducto(
         )
     ) {
         Column {
-             // Header: Avatar y NOMBRE del Usuario (Cambio realizado: usuario.nombre en vez de usuario.email)
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -225,20 +217,19 @@ fun ItemHistorialProducto(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = usuario.nombre.take(1).uppercase(),
+                        text = (usuario.nombre ?: "U").take(1).uppercase(),
                         style = MaterialTheme.typography.bodySmall,
                         color = Color.White
                     )
                 }
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = usuario.nombre, // Se usa el nombre como solicitado
+                    text = usuario.nombre ?: "Usuario",
                     style = MaterialTheme.typography.bodySmall,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 Spacer(modifier = Modifier.weight(1f))
-                // Icono de Papelera para borrar
                 IconButton(
                     onClick = onDelete,
                     modifier = Modifier.size(24.dp)
@@ -258,7 +249,6 @@ fun ItemHistorialProducto(
                     .fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Imagen Miniatura
                 val imagePainter: Painter = if (producto.imageResId != null) {
                     painterResource(id = producto.imageResId)
                 } else if (producto.imageUri != null) {

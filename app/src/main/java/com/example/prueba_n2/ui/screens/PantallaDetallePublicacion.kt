@@ -10,7 +10,9 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Send
-import androidx.compose.material.icons.filled.ShoppingCart // <--- Importante: Nuevo import
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Remove
+import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -40,10 +42,11 @@ fun PantallaDetallePublicacion(
     comentarioViewModel: ComentarioViewModel,
     usuarioActualNombre: String,
     onBack: () -> Unit,
-    onAddToCart: (Producto) -> Unit // <--- NUEVO PARÁMETRO: Callback para agregar al carrito
+    onAddToCart: (Producto, Int) -> Unit
 ) {
     val comentarios by comentarioViewModel.getComentarios(producto.id).collectAsState(initial = emptyList())
     var nuevoComentario by remember { mutableStateOf("") }
+    var cantidad by remember { mutableStateOf(1) }
 
     Scaffold(
         topBar = {
@@ -57,8 +60,9 @@ fun PantallaDetallePublicacion(
                                 .background(MaterialTheme.colorScheme.primaryContainer),
                             contentAlignment = Alignment.Center
                         ) {
+                            val inicial = if (producto.sellerName.isNotEmpty()) producto.sellerName.take(1).uppercase() else "U"
                             Text(
-                                text = producto.sellerName.take(1).uppercase(),
+                                text = inicial,
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.onPrimaryContainer
@@ -67,7 +71,7 @@ fun PantallaDetallePublicacion(
                         Spacer(modifier = Modifier.width(12.dp))
                         Column {
                             Text(
-                                text = producto.sellerName,
+                                text = producto.sellerName.ifEmpty { "Vendedor" },
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold
                             )
@@ -154,21 +158,22 @@ fun PantallaDetallePublicacion(
                 .fillMaxSize()
         ) {
             item {
-                val imagePainter: Painter = if (producto.imageResId != null) {
-                    painterResource(id = producto.imageResId)
-                } else if (producto.imageUri != null) {
-                    rememberAsyncImagePainter(
-                        ImageRequest.Builder(LocalContext.current)
-                            .data(data = Uri.parse(producto.imageUri))
-                            .apply(block = fun ImageRequest.Builder.() {
-                                crossfade(true)
-                                placeholder(R.drawable.ic_launcher_background)
-                                error(R.drawable.ic_launcher_background)
-                            }).build()
-                    )
+                val imageModel = if (producto.imageResId != null && producto.imageResId != 0) {
+                    producto.imageResId
+                } else if (!producto.imageUri.isNullOrEmpty()) {
+                    Uri.parse(producto.imageUri)
                 } else {
-                    painterResource(id = R.drawable.ic_launcher_background)
+                    R.drawable.ic_launcher_background
                 }
+
+                val imagePainter = rememberAsyncImagePainter(
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(imageModel)
+                        .crossfade(true)
+                        .placeholder(R.drawable.ic_launcher_background)
+                        .error(R.drawable.ic_launcher_background)
+                        .build()
+                )
 
                 Image(
                     painter = imagePainter,
@@ -182,7 +187,7 @@ fun PantallaDetallePublicacion(
                 Column(modifier = Modifier.padding(16.dp)) {
 
                     Text(
-                        text = producto.name,
+                        text = producto.name.ifEmpty { "Producto sin nombre" },
                         style = MaterialTheme.typography.headlineMedium,
                         fontWeight = FontWeight.Black,
                         color = MaterialTheme.colorScheme.onBackground
@@ -207,9 +212,45 @@ fun PantallaDetallePublicacion(
                         )
                     }
 
-                    // --- NUEVO: Botón Agregar al Carrito ---
+                    Divider(color = MaterialTheme.colorScheme.outlineVariant)
+                    
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            text = "Cantidad:",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                        
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            IconButton(
+                                onClick = { if (cantidad > 1) cantidad-- },
+                                enabled = cantidad > 1
+                            ) {
+                                Icon(Icons.Default.Remove, contentDescription = "Disminuir cantidad")
+                            }
+                            
+                            Text(
+                                text = cantidad.toString(),
+                                style = MaterialTheme.typography.titleLarge,
+                                modifier = Modifier.padding(horizontal = 12.dp)
+                            )
+                            
+                            IconButton(onClick = { cantidad++ }) {
+                                Icon(Icons.Default.Add, contentDescription = "Aumentar cantidad")
+                            }
+                        }
+                    }
+                    
+                    Spacer(modifier = Modifier.height(16.dp))
+
                     Button(
-                        onClick = { onAddToCart(producto) },
+                        onClick = { onAddToCart(producto, cantidad) },
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(bottom = 12.dp),
@@ -219,14 +260,13 @@ fun PantallaDetallePublicacion(
                     ) {
                         Icon(Icons.Default.ShoppingCart, contentDescription = null)
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Agregar al Carrito")
+                        Text("Agregar al Carrito ($cantidad)")
                     }
-                    // ---------------------------------------
 
                     Divider(color = MaterialTheme.colorScheme.outlineVariant)
 
                     Text(
-                        text = producto.description,
+                        text = producto.description.ifEmpty { "Sin descripción" },
                         style = MaterialTheme.typography.bodyLarge,
                         modifier = Modifier.padding(vertical = 16.dp),
                         lineHeight = MaterialTheme.typography.bodyLarge.lineHeight * 1.2
@@ -281,8 +321,9 @@ fun ItemComentario(comentario: Comentario) {
                 .background(MaterialTheme.colorScheme.secondaryContainer),
             contentAlignment = Alignment.Center
         ) {
+            val inicial = if (comentario.usuarioNombre.isNotEmpty()) comentario.usuarioNombre.take(1).uppercase() else "A"
             Text(
-                text = comentario.usuarioNombre.take(1).uppercase(),
+                text = inicial,
                 style = MaterialTheme.typography.titleSmall,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSecondaryContainer
@@ -291,7 +332,7 @@ fun ItemComentario(comentario: Comentario) {
         Spacer(modifier = Modifier.width(12.dp))
         Column {
             Text(
-                text = comentario.usuarioNombre,
+                text = comentario.usuarioNombre.ifEmpty { "Anónimo" },
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface

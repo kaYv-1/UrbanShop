@@ -14,7 +14,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -33,6 +32,10 @@ fun TarjetaProducto(
     producto: Producto,
     onItemClick: (Producto) -> Unit
 ) {
+    val sellerName = producto.sellerName ?: "Vendedor"
+    val productName = producto.name ?: "Sin Nombre"
+    val productDesc = producto.description ?: "Sin Descripción"
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -61,8 +64,9 @@ fun TarjetaProducto(
                         .background(Color.LightGray),
                     contentAlignment = Alignment.Center
                 ) {
+                    val inicial = if (sellerName.isNotEmpty()) sellerName.take(1).uppercase() else "U"
                     Text(
-                        text = producto.sellerName.take(1).uppercase(),
+                        text = inicial,
                         style = MaterialTheme.typography.bodyMedium,
                         color = Color.White
                     )
@@ -70,32 +74,33 @@ fun TarjetaProducto(
                 Spacer(modifier = Modifier.width(8.dp))
                 
                 Text(
-                    text = producto.sellerName,
+                    text = sellerName,
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface
                 )
             }
 
-            val imagePainter: Painter = if (producto.imageResId != null) {
-                painterResource(id = producto.imageResId)
-            } else if (producto.imageUri != null) {
-                rememberAsyncImagePainter(
-                    ImageRequest.Builder(LocalContext.current)
-                        .data(data = Uri.parse(producto.imageUri))
-                        .apply(block = fun ImageRequest.Builder.() {
-                            crossfade(true)
-                            placeholder(R.drawable.ic_launcher_background)
-                            error(R.drawable.ic_launcher_background)
-                        }).build()
-                )
+            val imageModel = if (producto.imageResId != null && producto.imageResId != 0) {
+                producto.imageResId
+            } else if (!producto.imageUri.isNullOrEmpty()) {
+                Uri.parse(producto.imageUri)
             } else {
-                painterResource(id = R.drawable.ic_launcher_background)
+                R.drawable.ic_launcher_background
             }
+
+            val imagePainter = rememberAsyncImagePainter(
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(imageModel)
+                    .crossfade(true)
+                    .placeholder(R.drawable.ic_launcher_background)
+                    .error(R.drawable.ic_launcher_background)
+                    .build()
+            )
             
             Image(
                 painter = imagePainter,
-                contentDescription = producto.name,
+                contentDescription = productName,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(300.dp), 
@@ -107,7 +112,7 @@ fun TarjetaProducto(
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                      Text(
-                        text = producto.name,
+                        text = productName,
                         style = MaterialTheme.typography.bodyLarge,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface
@@ -124,7 +129,7 @@ fun TarjetaProducto(
                 Spacer(modifier = Modifier.height(4.dp))
 
                 Text(
-                    text = producto.description,
+                    text = productDesc,
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurface,
                     maxLines = 2,

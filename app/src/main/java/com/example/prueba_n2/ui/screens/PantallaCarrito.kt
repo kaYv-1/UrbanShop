@@ -14,7 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.example.prueba_n2.model.Producto
+import com.example.prueba_n2.model.CartItem
 import com.example.prueba_n2.viewmodel.ProductoViewModel
 import java.text.NumberFormat
 import java.util.Locale
@@ -27,9 +27,7 @@ fun PantallaCarrito(
 ) {
     val itemsCarrito by viewModel.carrito.collectAsState()
     val context = LocalContext.current
-
-    // Calcular total
-    val total = itemsCarrito.sumOf { it.price }
+    val total = itemsCarrito.sumOf { it.producto.price * it.cantidad }
 
     Scaffold(
         topBar = {
@@ -62,8 +60,8 @@ fun PantallaCarrito(
                         Button(
                             onClick = {
                                 viewModel.vaciarCarrito()
-                                Toast.makeText(context, "Productos adquiridos", Toast.LENGTH_LONG).show()
-                                onBack() // Opcional: Volver al inicio tras pagar
+                                Toast.makeText(context, "Compra realizada con éxito", Toast.LENGTH_LONG).show()
+                                onBack()
                             },
                             modifier = Modifier.fillMaxWidth()
                         ) {
@@ -80,8 +78,8 @@ fun PantallaCarrito(
             }
         } else {
             LazyColumn(modifier = Modifier.padding(padding)) {
-                items(itemsCarrito) { producto ->
-                    ItemCarrito(producto = producto, onDelete = { viewModel.eliminarDelCarrito(producto) })
+                items(itemsCarrito) { item ->
+                    ItemCarrito(cartItem = item, onDelete = { viewModel.eliminarDelCarrito(item.producto) })
                 }
             }
         }
@@ -89,7 +87,7 @@ fun PantallaCarrito(
 }
 
 @Composable
-fun ItemCarrito(producto: Producto, onDelete: () -> Unit) {
+fun ItemCarrito(cartItem: CartItem, onDelete: () -> Unit) {
     Card(
         modifier = Modifier.fillMaxWidth().padding(8.dp),
         elevation = CardDefaults.cardElevation(2.dp)
@@ -99,9 +97,22 @@ fun ItemCarrito(producto: Producto, onDelete: () -> Unit) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(modifier = Modifier.weight(1f)) {
-                Text(producto.name, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                Text(producto.category, style = MaterialTheme.typography.bodySmall)
-                Text(formatPrice(producto.price), color = MaterialTheme.colorScheme.primary)
+                Text(
+                    text = "${cartItem.producto.name} x ${cartItem.cantidad}",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(cartItem.producto.category, style = MaterialTheme.typography.bodySmall)
+                Text(
+                    text = "${formatPrice(cartItem.producto.price)} c/u", 
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.secondary
+                )
+                Text(
+                    text = "Subtotal: ${formatPrice(cartItem.producto.price * cartItem.cantidad)}",
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.SemiBold
+                )
             }
             IconButton(onClick = onDelete) {
                 Icon(Icons.Default.Delete, contentDescription = "Eliminar", tint = MaterialTheme.colorScheme.error)
